@@ -307,8 +307,7 @@ class SearchSystem {
         Page3 - 0
         Page4 - 1
         ```
-
-   2. Тест для displayKeywords:
+2. Тест для displayKeywords:
 
     - 1.**Output**:
         ```
