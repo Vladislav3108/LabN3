@@ -101,6 +101,191 @@
 ### 4. Программа
 
 ```java
+import java.util.*;
+
+//создание класса Страница
+class Page {
+    String title;//название страницы
+    List<String> keywords;// список слов-ассоциаций
+    int visits;//количество просмотров страницы
+
+    //создание конструктора для создания страницы
+    public Page(String title, List<String> keywords,Integer visits) {
+        this.title = title;
+        this.keywords = new ArrayList<>(keywords);
+        this.visits = visits;
+    }
+
+    //метод для получения имени страницы
+    public String getTitle() {
+        return title;
+    }
+
+    //метод для получения количества посещений страницы
+    public int getVisits() {
+        return visits;
+    }
+
+    //метод для получения слов-ассоциацией страницы
+    public List<String> getKeywords() {
+        return keywords;
+    }
+
+    //метод для увелечения количества посещений страницы на один
+    public void incrementVisits() {
+        visits++;
+    }
+
+    //метод для вывода имени страницы и количества посещений
+    @Override
+    public String toString() {
+        return title + " - " + visits;
+    }
+}
+
+//создания класса для поиска, вывода и сортировки страниц
+class SearchSystem {
+    private final List<Page> pages = new ArrayList<>();
+
+    // 1. Вывод списка страниц
+    public void displayPages() {
+        for (Page page : pages) {
+            System.out.println(page);
+        }
+    }
+
+    // 2. Добавление страницы
+    public void addPage(String title, List<String> keywords, Integer visits) {
+        pages.add(new Page(title, keywords, visits));
+    }
+
+    // 3. Вывод слов-ассоциаций страницы, которую ищем
+    public void displayKeywords(String title) {
+        for (Page page : pages) {
+            if (page.getTitle().equalsIgnoreCase(title)) {//поиск страницы с таким же названием
+                page.incrementVisits();//когда нашли нужную страницу, увеличиваем счетчик посещений на один
+                System.out.println(page.getKeywords());//выводим слова-ассоциации нужной страницы
+                return;
+            }
+        }
+        System.out.println("Page not found.");//Если не нашли страницу с нужным названием выводим, что страница не найдена
+    }
+
+    // 4. Вывод страниц без слов для поиска
+    public void displayPagesWithoutKeywords() {
+        for (Page page : pages) {
+            if (page.getKeywords().isEmpty()) {//проверяем пустой ли список слов-ассоциаций
+                page.incrementVisits();//увеличиваем счетчик посещений на один
+                System.out.println(page);//выводим название страницы и количество посещений
+            }
+        }
+    }
+
+    // 5. Страницы с максимальным количеством слов-ассоциаций
+    public void pagesWithMaxKeywords() {//находим максимальное количество слов-ассоциаций
+        int maxKeywords = pages.stream()//создаем поток из коллекции pages
+                .mapToInt(page -> page.getKeywords().size())//преобразуем каждую страницу в поток чисел,где каждое число количества слов-ассоциаций
+                .max()//определяем максимальное значение в потоке чисел
+                .orElse(0);//если поток пуст, возвращаем 0
+
+        for (Page page : pages) {//ищем страницу с максимальным количеством слов-ассоциаций
+            if (page.getKeywords().size() == maxKeywords) {
+                page.incrementVisits();
+                System.out.println(page);
+            }
+        }
+    }
+
+    // 6. Страницы с совпадением чётности букв и слов
+    public void pagesMatchingWordEvenness() {
+        for (Page page : pages) {
+            int wordCount = page.getKeywords().size();//количество слов-ассоциаций
+            boolean allMatch = page.getKeywords().stream()
+                    .allMatch(word -> (word.length() % 2) == (wordCount % 2));//проверяем выполняется ли заданное условие
+
+            if (allMatch) {
+                page.incrementVisits();//увеличиваем счетчик посещений страницы
+                System.out.println(page);//выводим информацию о страницы
+            }
+        }
+    }
+
+    // 7. Первая страница с самым длинным словом
+    public void pageWithLongestWord() {
+        Page result = null;//переменная для объекта страница, на которой находится самое большое слово
+        String longestWord = "";//переменная для хранения самого длинного слова
+
+        for (Page page : pages) {
+            for (String word : page.getKeywords()) {//перебираем каждое слово-ассоциацию для каждой страницы
+                if (word.length() > longestWord.length()) {//ищем слово максимальной длинны и страницу, на которой оно находится
+                    longestWord = word;
+                    result = page;
+                }
+            }
+        }
+
+        if (result != null) {//если найдено самое длинное слово
+            result.incrementVisits();//увеличиваем счетчик посещений на один
+            System.out.println("Page: " + result.getTitle() + ", Longest Word: " + longestWord);
+        }
+    }
+
+    // 8. Поиск самой подходящей страницы
+    public void findMostRelevantPage(List<String> searchWords) {
+        Page bestPage = null;//переменная для хранения самой подходящей страницы
+        int maxMatches = 0;//переменная для хранения максимального количества совпадений слов-ассоциаций
+
+        for (Page page : pages) {
+            int matches = (int) page.getKeywords().stream()//создаем поток из слов-ассоциаций текущей страницы
+                    .filter(searchWords::contains)//оставляем в потоке только те слова, которые есть в searchWords
+                    .count();//считаем количество совпавших слов
+
+            if (matches > maxMatches) {//обновляем максимум совпадений и страницу
+                maxMatches = matches;
+                bestPage = page;
+            }
+        }
+
+        if (bestPage != null) {//если нашли подходящую страницу
+            bestPage.incrementVisits();//увеличиваем счетчик посещений
+            System.out.println("Most Relevant Page: " + bestPage.getTitle());
+        }
+    }
+
+
+    // 9. Топ-3 самых посещаемых страниц
+    public void topThreePages() {
+        pages.stream()//создаем поток из коллекции pages
+                .sorted(Comparator.comparingInt(Page::getVisits).reversed())//сортируем страницы по убыванию посещений
+                .limit(3)//выбираем первые три элемента из отсортированного потока
+                .forEach(page -> {//для каждой выбранной страницы
+                    page.incrementVisits();//увеличиваем счетчик посещений
+                    System.out.println(page);
+                });
+    }
+
+    // 10. Поиск наименее подходящих страниц
+    public void findLeastRelevantPages(List<String> searchWords) {
+        int maxMismatch = -1;
+        List<Page> leastRelevantPages = new ArrayList<>();
+
+        for (Page page : pages) {
+            int mismatches = (int) searchWords.stream()//создаем поток из слов searchWords
+                    .filter(word -> !page.getKeywords().contains(word))//оставляем только те слова, которые не содержатся в словах-ассоциациях текущей старницы
+                    .count();//считаем количество не совпавших слов
+
+            if (mismatches > maxMismatch) {
+                maxMismatch = mismatches;//обновляем minMismatch
+                leastRelevantPages.clear();//отчищаем список
+                leastRelevantPages.add(page);//добавляем текущую страницу
+            } else if (mismatches == maxMismatch) {//если количество несовпадений равно текущему максимуму
+                leastRelevantPages.add(page);//добавляем текущую страницу
+            }
+        }
+
+        leastRelevantPages.forEach(System.out::println);//выводим список наименее релевантных страниц
+    }
+}
 
 ```
 
